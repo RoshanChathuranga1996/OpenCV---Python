@@ -1,0 +1,24 @@
+import turtle
+
+qazi_turtle = turtle.Turtle()
+
+
+def square():
+    qazi_turtle.forward(100)
+    qazi_turtle.right(90)
+    qazi_turtle.forward(100)
+    qazi_turtle.right(90)
+    qazi_turtle.forward(100)
+    qazi_turtle.right(90)
+    qazi_turtle.forward(100)
+
+elephant1 = 3000
+ant = 0.001
+
+#if elephant1 > ant:
+    #square()
+qazi = 0
+while qazi < 4:
+    square()
+
+

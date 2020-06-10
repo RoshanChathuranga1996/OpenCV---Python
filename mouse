@@ -1,0 +1,32 @@
+import cv2
+import numpy as np
+
+#events = [i for i in dir(cv2) if 'EVENT' in i]
+#print(events)
+
+def click_events(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print(x, y)
+        font = cv2.FONT_HERSHEY_COMPLEX
+        textxy = str(x) + ' , ' + str(y)
+        cv2.putText(img, textxy, (x, y), font, .5, (0, 0, 255), 2)
+        cv2.imshow('image', img)
+
+    if event == cv2.EVENT_RBUTTONDOWN:
+        blue = img[x, y, 0]
+        green = img[x, y, 1]
+        red = img[x, y, 2]
+        print(blue, green, red)
+        font = cv2.FONT_HERSHEY_COMPLEX
+        texclr = str(blue) + ' , ' + str(green) + ' , ' + str(red)
+        cv2.putText(img, texclr, (x, y), font, .5, (255, 255, 255), 2)
+        cv2.imshow('image', img)
+
+#img = np.zeros((512,512,3), np.uint8)
+img = cv2.imread('img/messi5.jpg')
+cv2.imshow('image', img)
+
+cv2.setMouseCallback('image', click_events)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
