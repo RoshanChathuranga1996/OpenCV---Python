@@ -97,10 +97,10 @@ matchedAdFrame = {}
 currentHashList = []
 loopNo = 0
 
-Log_filename = "C:\\Users\\Roshan\\Desktop\\Intern\\Log\\Info.log"
-logging.basicConfig(level=logging.INFO, filename=Log_filename, filemode='w',
-                    format='%(levelname)s:%(asctime)s:'
-                           ' %(message)s', datefmt='%d-%b-%Y - %I:%M:%S %p')
+log_format = '%(levelname)s: %(name)s: %(asctime)s: %(message)s'
+log_filename = "C:\\Users\\Roshan\\Desktop\\Intern\\Log\\Info.log"
+logging.basicConfig(level=logging.INFO, filename=log_filename, filemode='w',
+                    format=log_format, datefmt='%d-%b-%Y - %I:%M:%S %p')
 
 logging.info("<< App Started [INFO_LOG] >> \n")
 
