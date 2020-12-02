@@ -11,11 +11,27 @@ from datetime import datetime
 
 
 hashes = {'A': {}}
-imgSources = {'A': {}, 'B': {}, 'C': {}, 'D': {}, 'E': {}, 'F': {}}
+hashD = {'A': {}, 'B': {}, 'C': {}}
 adName = {}
 nested_key = list(hashes.keys())
 loopNo = 0
 timeAdStart = time.time()
+
+
+def dHash(image, hashsize=8):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    resized = cv2.resize(gray, (hashsize + 1, hashsize))
+    diffD = resized[:, 1:] > resized[:, :-1]
+    return sum([2 ** i for (i, v) in enumerate(diffD.flatten()) if v])
+
+
+def convert_hash(h):
+    return int(np.array(h, dtype="float64"))
+
+
+def hammingD(a, b):
+    return bin(int(a) ^ int(b)).count("1")
+
 
 # create folders for every day & write logger
 currentDt = datetime.date(datetime.now()).strftime("%Y%b%d")
@@ -81,8 +97,9 @@ def sampleCreate(video, num, fName):
         if ret1:
 
             frames = frames[100:400, 0:640]
-            # frames = frames[100:490, 0:720]
-            # frames = cv2.resize(frames, (640, 300))
+            h = dHash(frames)
+            h = convert_hash(h)
+
             img1 = Image.fromarray(frames)
             hsh = imagehash.phash(img1)
             one = nested_key[num]
@@ -101,12 +118,12 @@ def sampleCreate(video, num, fName):
             d = {frame_no: hsh}
             hashes[one].update(d)
 
-            img_encode = cv2.imencode('.jpg', frames)[1]
-            data_encode = np.array(img_encode)
-            byt_encode = data_encode.tobytes()
+            # img_encode = cv2.imencode('.jpg', frames)[1]
+            # data_encode = np.array(img_encode)
+            # byt_encode = data_encode.tobytes()
 
-            m = {frame_no: byt_encode}
-            imgSources[one].update(m)
+            m = {frame_no: h}
+            hashD[one].update(m)
 
             y = {(num + 1): fName}
             adName.update(y)
