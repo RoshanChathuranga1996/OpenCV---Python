@@ -4,7 +4,7 @@ import pickle
 from datetime import datetime
 import numpy as np
 from PIL import Image
-from AdSample import logger1, logger3, nested_key, adName
+from AdSample import logger1, logger3, nested_key, adName, dHash, convert_hash, hammingD, hashD
 import time
 import os
 
@@ -15,10 +15,14 @@ adNum = list(adName.keys())
 adName = list(adName.values())
 
 subAdHash = {}
+subAdHashD = {}
 checkDict = {}
+checkDictD = {}
 streamImg = {}
 checkDictList = []
+checkDictListD = []
 subAdHashList = []
+subAdHashListD = []
 status = 0
 adFrameNo = 1
 streamFrameNo = 0
@@ -29,9 +33,9 @@ missMatchCounterFinal = 0
 totalFrameCounter = 0
 point = 0
 # Define Ad key frames
-kx1 = 867  # sn 1 - 60f
-kx2 = 942  # sn 2 - 13f
-kx3 = 972  # sn 3 - 72f
+kx1 = 867  # sn 1 - 68f
+kx2 = 942  # sn 2 - 30f
+kx3 = 972  # sn 3 - 33f
 # kx4 = 802  # sn 4 - 21f
 # kx5 = 823  # sn 5 - 13f
 # Match count of each sn
@@ -62,11 +66,15 @@ def hamming(a, b):
 
 
 def matchAd(fNo, adNo, stNo, di, sn):
-    global checkDict, checkDictList, status, streamFld, st
+    global checkDict, checkDictList, status, streamFld, st, checkDictD, checkDictListD
     st = fNo
     checkDict = subAdHash.copy()
     checkDictList = checkDict.values()
     checkDictList = list(checkDictList)
+
+    checkDictD = subAdHashD.copy()
+    checkDictListD = checkDictD.values()
+    checkDictListD = list(checkDictListD)
 
     logger1.info('-------' * 5)
     logger1.info("Match to Ad {}...".format(adNo))
@@ -83,7 +91,6 @@ def matchAd(fNo, adNo, stNo, di, sn):
     print("SF {} - match with AdF {} - Dif = {}".format(stNo, fNo, di))
     print("Matched with sn {}".format(sn))
 
-    # imgSc = adCounter - 1
     currentDt = datetime.date(datetime.now()).strftime("%Y%b%d")
     currentTm = datetime.time(datetime.now()).strftime("%I-%M-%S %p")
     ff = "AD{} ({}) - {}, {}".format(adNo, adName[adNo-1], currentDt, currentTm)
@@ -94,7 +101,7 @@ def matchAd(fNo, adNo, stNo, di, sn):
 
 
 # Stream
-path = "E:\\Opencv_project\\Videos\\Stream\\r1.mp4"
+path = "E:\\Opencv_project\\Videos\\Stream\\d3.mp4"
 capture = cv2.VideoCapture(path)
 
 while True:
@@ -104,11 +111,21 @@ while True:
     if ret:
 
         frame = frame[100:400, 0:640]
+        checkD = dHash(frame)
+        checkD = convert_hash(checkD)
+
         img2 = Image.fromarray(frame)
         check = imagehash.phash(img2)
         print("-- Processing frame {} --".format(streamFrameNo))
 
-        file_h = open('E:\\Opencv_project\\Pkl\\Stream.pickle', 'w')
+        now = datetime.now()
+        nowLoc = str(now.date()) + " " + str(now.hour)
+        ff = "StreamHash {}".format(nowLoc)
+        SFld = r'E:\\Opencv_project\\Pkl\\{}'.format(ff)
+        if not os.path.exists(SFld):
+            os.makedirs(SFld)
+
+        file_h = open(SFld + "\\Stream.pickle", 'w')
         file_h.write(str(pickle.dumps(check)))
         file_h.close()
 
@@ -146,6 +163,11 @@ while True:
                 subAdHash = hashes[sb_dt].copy()
                 subAdHashList = subAdHash.values()
                 subAdHashList = list(subAdHashList)
+
+                subAdHashD.clear()
+                subAdHashD = hashD[sb_dt].copy()
+                subAdHashListD = subAdHashD.values()
+                subAdHashListD = list(subAdHashListD)
 
                 adCounter += 1
 
@@ -203,10 +225,12 @@ while True:
             if len(checkDictList) > adFrameNo:  # set limit
 
                 currentHash = checkDictList[st]
+                currentHashD = checkDictListD[st]
                 adFrameNo += 1
                 st += 1
 
                 dif = hamming(currentHash, check)
+                difD = hammingD(currentHashD, checkD)
 
                 if adFrameNo == len(checkDictList):
                     matchCounterFinal = matchCount
@@ -219,6 +243,7 @@ while True:
                                  str(dif) + "   [Hash: " + str(check) + ']')
                     print("SF {} - match with AdF ".format(streamFrameNo-1) + str(st) + " - Dif = " +
                           str(dif))
+                    print("D hash diff = {}".format(difD))
 
                     if active == 1:
                         sn1 += 1
@@ -238,7 +263,7 @@ while True:
                                  str(dif) + "   [SH: " + str(check) + ", AH: " + str(currentHash) + ']')
                     print("SF {} - miss match with AdF ".format(streamFrameNo-1) + str(st) + " - Dif = " +
                           str(dif) + "   [SH: " + str(check) + ", AH: " + str(currentHash) + ']')
-
+                    print("D hash diff = {}".format(difD))
                     missMatchCount += 1
                     status = 0
 
